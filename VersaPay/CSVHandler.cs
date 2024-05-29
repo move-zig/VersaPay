@@ -1,6 +1,5 @@
 ﻿namespace VersaPay;
 
-using Microsoft.Extensions.Logging;
 using VersaPay.PaymentRepository;
 using VersaPay.Spreadsheet;
 
@@ -15,8 +14,7 @@ public class CSVHandler : ICSVHandler
     /// </summary>
     /// <param name="spreadsheetReader">An <see cref="ISpreadsheetReader"/>.</param>
     /// <param name="paymentRepository">An <see cref="IPaymentRepository"/>.</param>
-    /// <param name="logger">An <see cref="ILogger"/>.</param>
-    public CSVHandler(ISpreadsheetReader spreadsheetReader, IPaymentRepository paymentRepository, ILogger<Program> logger)
+    public CSVHandler(ISpreadsheetReader spreadsheetReader, IPaymentRepository paymentRepository)
     {
         this.spreadsheetReader = spreadsheetReader;
         this.paymentRepository = paymentRepository;
