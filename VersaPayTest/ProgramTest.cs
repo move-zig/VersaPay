@@ -1,9 +1,7 @@
 namespace VersaPayTest;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
-using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using VersaPay;
 
@@ -48,9 +46,9 @@ public class ProgramTest
         {
             { @"C:\Temp\foo.csv", new MockFileData("Hello!") },
             { @"C:\Temp\bar.csv", new MockFileData("Hello!") },
-            { @"C:\Temp\not_a_csv.txt", new MockFileData("Hello!") },
+            { @"C:\Temp\not_a_csv.txt", new MockFileData("Hello!") }, // not a CSV file
             { @"C:\Temp\baz.csv", new MockFileData("Hello!") },
-            { @"C:\OtherFolder\qux.csv", new MockFileData("Hello!") },
+            { @"C:\OtherFolder\qux.csv", new MockFileData("Hello!") }, // wrong folder
         });
 
         var program = new Program(this.options, this.csvHandler.Object, fileSystem, this.logger.Object);
