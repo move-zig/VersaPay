@@ -5,11 +5,11 @@ using Moq;
 using System;
 using VersaPay;
 
-public class SpreadsheetReaderTest
+public class PaymentReaderTest
 {
-    private readonly Mock<ISpreadsheet> spreadsheet = new();
+    private readonly Mock<ISpreadsheet> spreadsheet = new ();
 
-    public SpreadsheetReaderTest()
+    public PaymentReaderTest()
     {
         this.spreadsheet.Setup(x => x.RowCount).Returns(3);
 
