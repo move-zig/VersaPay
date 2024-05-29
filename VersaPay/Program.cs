@@ -34,9 +34,14 @@ public class Program
     {
         var builder = Host.CreateApplicationBuilder(args);
 
+        builder.Services.AddSingleton<ICSVHandler, CSVHandler>();
         builder.Services.AddSingleton<ISpreadsheetReader, GemboxSpreadsheetReader>();
         builder.Services.AddSingleton<IPaymentRepository, DummyPaymentRepository>();
         builder.Services.AddSingleton<IFileSystem, FileSystem>();
+        builder.Services.AddOptions<ProgramOptions>()
+            .Bind(builder.Configuration.GetSection(ProgramOptions.ConfigurationSectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         builder.Services.AddSingleton<Program>();
 
         using var host = builder.Build();
