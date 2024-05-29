@@ -1,7 +1,6 @@
 ﻿namespace VersaPay;
 
 using Microsoft.Extensions.Logging;
-using System.IO.Abstractions;
 using VersaPay.PaymentRepository;
 using VersaPay.Spreadsheet;
 
@@ -10,7 +9,6 @@ public class CSVHandler : ICSVHandler
 {
     private readonly ISpreadsheetReader spreadsheetReader;
     private readonly IPaymentRepository paymentRepository;
-    private readonly IFileSystem fileSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CSVHandler"/> class.
@@ -18,17 +16,16 @@ public class CSVHandler : ICSVHandler
     /// <param name="spreadsheetReader">An <see cref="ISpreadsheetReader"/>.</param>
     /// <param name="paymentRepository">An <see cref="IPaymentRepository"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/>.</param>
-    public CSVHandler(ISpreadsheetReader spreadsheetReader, IPaymentRepository paymentRepository, IFileSystem fileSystem, ILogger<Program> logger)
+    public CSVHandler(ISpreadsheetReader spreadsheetReader, IPaymentRepository paymentRepository, ILogger<Program> logger)
     {
         this.spreadsheetReader = spreadsheetReader;
         this.paymentRepository = paymentRepository;
-        this.fileSystem = fileSystem;
     }
 
     /// <inheritdoc/>
-    public void ParseStoreAndCopyCSV(IFileInfo fileInfo, string copyFolder)
+    public void ParseStoreAndCopyCSV(string csvFullName, string destinationFullName)
     {
-        var spreadsheet = this.spreadsheetReader.ReadCSV(fileInfo.FullName);
+        var spreadsheet = this.spreadsheetReader.ReadCSV(csvFullName);
 
         var paymentReader = new PaymentReader(spreadsheet);
 
@@ -38,7 +35,6 @@ public class CSVHandler : ICSVHandler
             this.paymentRepository.Save(payment);
         }
 
-        var destinationFilename = this.fileSystem.Path.Join(copyFolder, fileInfo.Name);
-        spreadsheet.ExportCSV(destinationFilename);
+        spreadsheet.ExportCSV(destinationFullName);
     }
 }

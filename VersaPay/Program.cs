@@ -6,12 +6,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using VersaPay.PaymentRepository;
 using System.IO.Abstractions;
+using Microsoft.Extensions.Options;
 
 public class Program
 {
-    private const string IncommingFolder = @"C:\Temp";
-    private const string CopyFolder = @"C:\Temp\Copies";
-
+    private readonly ProgramOptions options;
     private readonly ICSVHandler csvHandler;
     private readonly IFileSystem fileSystem;
     private readonly ILogger<Program> logger;
@@ -19,11 +18,13 @@ public class Program
     /// <summary>
     /// Initializes a new instance of the <see cref="Program"/> class.
     /// </summary>
+    /// <param name="options">The configuraion options.</param>
     /// <param name="csvHandler">An <see cref="ICSVHandler"/>.</param>
     /// <param name="fileSystem">An <see cref="IFileSystem"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/>.</param>
-    public Program(ICSVHandler csvHandler, IFileSystem fileSystem, ILogger<Program> logger)
+    public Program(IOptions<ProgramOptions> options, ICSVHandler csvHandler, IFileSystem fileSystem, ILogger<Program> logger)
     {
+        this.options = options.Value;
         this.csvHandler = csvHandler;
         this.fileSystem = fileSystem;
         this.logger = logger;
@@ -47,22 +48,23 @@ public class Program
 
     public async Task RunAsync()
     {
-        if (!this.fileSystem.Directory.Exists(CopyFolder))
+        if (!this.fileSystem.Directory.Exists(this.options.DestinationDirectory))
         {
-            this.fileSystem.Directory.CreateDirectory(CopyFolder);
+            this.fileSystem.Directory.CreateDirectory(this.options.DestinationDirectory);
         }
 
-        var csvFiles = this.GetCSVFiles();
+        var csvFileInfos = this.GetCSVFiles();
 
-        foreach (var csvFile in csvFiles)
+        foreach (var csvFileInfo in csvFileInfos)
         {
-            this.csvHandler.ParseStoreAndCopyCSV(csvFile, CopyFolder);
+            var destinationFullName = this.fileSystem.Path.Join(this.options.DestinationDirectory, csvFileInfo.Name);
+            this.csvHandler.ParseStoreAndCopyCSV(csvFileInfo.FullName, destinationFullName);
         }
     }
 
     private IEnumerable<IFileInfo> GetCSVFiles()
     {
-        return this.fileSystem.DirectoryInfo.New(IncommingFolder)
+        return this.fileSystem.DirectoryInfo.New(this.options.IncommingDirectory)
             .GetFiles()
             .Where(this.IsCSVFile);
     }
