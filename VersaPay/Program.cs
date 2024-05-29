@@ -5,11 +5,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using VersaPay.PaymentRepository;
+using System.IO.Abstractions;
 
 public class Program
 {
+    private const string IncommingFolder = @"C:\Temp";
+    private const string CopyFolder = @"C:\Temp\Copies";
+    
     private readonly ISpreadsheetReader spreadsheetReader;
     private readonly IPaymentRepository paymentRepository;
+    private readonly IFileSystem fileSystem;
     private readonly ILogger<Program> logger;
 
     /// <summary>
@@ -18,10 +23,11 @@ public class Program
     /// <param name="spreadsheetReader">An <see cref="ISpreadsheetReader"/>.</param>
     /// <param name="paymentRepository">An <see cref="IPaymentRepository"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/>.</param>
-    public Program(ISpreadsheetReader spreadsheetReader, IPaymentRepository paymentRepository, ILogger<Program> logger)
+    public Program(ISpreadsheetReader spreadsheetReader, IPaymentRepository paymentRepository, IFileSystem fileSystem, ILogger<Program> logger)
     {
         this.spreadsheetReader = spreadsheetReader;
         this.paymentRepository = paymentRepository;
+        this.fileSystem = fileSystem;
         this.logger = logger;
     }
 
@@ -31,6 +37,7 @@ public class Program
 
         builder.Services.AddSingleton<ISpreadsheetReader, GemboxSpreadsheetReader>();
         builder.Services.AddSingleton<IPaymentRepository, DummyPaymentRepository>();
+        builder.Services.AddSingleton<IFileSystem, FileSystem>();
         builder.Services.AddSingleton<Program>();
 
         using var host = builder.Build();
@@ -42,7 +49,22 @@ public class Program
 
     public async Task RunAsync()
     {
-        var spreadsheet = this.spreadsheetReader.ReadCSV(@"C:\temp\foo.csv");
+        if (!this.fileSystem.Directory.Exists(CopyFolder))
+        {
+            this.fileSystem.Directory.CreateDirectory(CopyFolder);
+        }
+        
+        var csvFiles = this.GetCSVFiles();
+
+        foreach (var csvFile in csvFiles)
+        {
+            this.ParseStoreAndCopyCSV(csvFile);
+        }
+    }
+
+    private void ParseStoreAndCopyCSV(IFileInfo fileInfo)
+    {
+        var spreadsheet = this.spreadsheetReader.ReadCSV(fileInfo.FullName);
 
         var paymentReader = new PaymentReader(spreadsheet);
 
@@ -53,6 +75,19 @@ public class Program
             Console.WriteLine(payment);
         }
 
-        spreadsheet.ExportCSV(@"C:\temp\foo copy.csv");
+        var destinationFilename = this.fileSystem.Path.Join(CopyFolder, fileInfo.Name);
+        spreadsheet.ExportCSV(destinationFilename);
+    }
+
+    private IEnumerable<IFileInfo> GetCSVFiles()
+    {
+        return this.fileSystem.DirectoryInfo.New(IncommingFolder)
+            .GetFiles()
+            .Where(this.IsCSVFile);
+    }
+
+    private bool IsCSVFile(IFileInfo fileInfo)
+    {
+        return fileInfo.Extension.Equals(".csv", StringComparison.CurrentCultureIgnoreCase);
     }
 }
