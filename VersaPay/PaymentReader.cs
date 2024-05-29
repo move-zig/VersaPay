@@ -35,7 +35,7 @@ public class PaymentReader : IPaymentReader
 
         for (var col = 0; col < MaxColumns; col++)
         {
-            if (this.spreadsheet.GetCellValueType(0, col) != CellValueType.String)
+            if (this.spreadsheet.GetCellValueType(row, col) != CellValueType.String)
             {
                 continue;
             }
