@@ -11,22 +11,20 @@ public class Program
 {
     private const string IncommingFolder = @"C:\Temp";
     private const string CopyFolder = @"C:\Temp\Copies";
-    
-    private readonly ISpreadsheetReader spreadsheetReader;
-    private readonly IPaymentRepository paymentRepository;
+
+    private readonly ICSVHandler csvHandler;
     private readonly IFileSystem fileSystem;
     private readonly ILogger<Program> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Program"/> class.
     /// </summary>
-    /// <param name="spreadsheetReader">An <see cref="ISpreadsheetReader"/>.</param>
-    /// <param name="paymentRepository">An <see cref="IPaymentRepository"/>.</param>
+    /// <param name="csvHandler">An <see cref="ICSVHandler"/>.</param>
+    /// <param name="fileSystem">An <see cref="IFileSystem"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/>.</param>
-    public Program(ISpreadsheetReader spreadsheetReader, IPaymentRepository paymentRepository, IFileSystem fileSystem, ILogger<Program> logger)
+    public Program(ICSVHandler csvHandler, IFileSystem fileSystem, ILogger<Program> logger)
     {
-        this.spreadsheetReader = spreadsheetReader;
-        this.paymentRepository = paymentRepository;
+        this.csvHandler = csvHandler;
         this.fileSystem = fileSystem;
         this.logger = logger;
     }
@@ -53,30 +51,13 @@ public class Program
         {
             this.fileSystem.Directory.CreateDirectory(CopyFolder);
         }
-        
+
         var csvFiles = this.GetCSVFiles();
 
         foreach (var csvFile in csvFiles)
         {
-            this.ParseStoreAndCopyCSV(csvFile);
+            this.csvHandler.ParseStoreAndCopyCSV(csvFile, CopyFolder);
         }
-    }
-
-    private void ParseStoreAndCopyCSV(IFileInfo fileInfo)
-    {
-        var spreadsheet = this.spreadsheetReader.ReadCSV(fileInfo.FullName);
-
-        var paymentReader = new PaymentReader(spreadsheet);
-
-        for (int row = 1; row < spreadsheet.RowCount; row++)
-        {
-            var payment = paymentReader.ReadRow(row);
-            this.paymentRepository.Save(payment);
-            Console.WriteLine(payment);
-        }
-
-        var destinationFilename = this.fileSystem.Path.Join(CopyFolder, fileInfo.Name);
-        spreadsheet.ExportCSV(destinationFilename);
     }
 
     private IEnumerable<IFileInfo> GetCSVFiles()

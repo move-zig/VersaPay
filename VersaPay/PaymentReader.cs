@@ -11,6 +11,10 @@ public class PaymentReader : IPaymentReader
     private readonly string[] headings;
     private readonly ISpreadsheet spreadsheet;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PaymentReader"/> class.
+    /// </summary>
+    /// <param name="spreadsheet">The spreadsheet to parse.</param>
     public PaymentReader(ISpreadsheet spreadsheet)
     {
         this.spreadsheet = spreadsheet;
