@@ -2,5 +2,5 @@
 
 public interface ICSVHandler
 {
-    public void ParseStoreAndCopyCSV(string csvFullName, string destinationFullName);
+    public void ParseAndStore(string csvFullName);
 }

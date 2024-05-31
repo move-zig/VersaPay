@@ -54,10 +54,18 @@ public class ProgramTest
         var program = new Program(this.options, this.csvHandler.Object, fileSystem, this.logger.Object);
         await program.RunAsync();
 
-        this.csvHandler.Verify(x => x.ParseStoreAndCopyCSV(@"C:\Temp\foo.csv", Path.Join(DestinationDirectory, "foo.csv")), Times.Once());
-        this.csvHandler.Verify(x => x.ParseStoreAndCopyCSV(@"C:\Temp\bar.csv", Path.Join(DestinationDirectory, "bar.csv")), Times.Once());
-        this.csvHandler.Verify(x => x.ParseStoreAndCopyCSV(@"C:\Temp\baz.csv", Path.Join(DestinationDirectory, "baz.csv")), Times.Once());
+        this.csvHandler.Verify(x => x.ParseAndStore(@"C:\Temp\foo.csv"), Times.Once());
+        this.csvHandler.Verify(x => x.ParseAndStore(@"C:\Temp\bar.csv"), Times.Once());
+        this.csvHandler.Verify(x => x.ParseAndStore(@"C:\Temp\baz.csv"), Times.Once());
 
-        this.csvHandler.Verify(x => x.ParseStoreAndCopyCSV(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(3));
+        this.csvHandler.Verify(x => x.ParseAndStore(It.IsAny<string>()), Times.Exactly(3));
+
+        Assert.False(fileSystem.File.Exists(@"C:\Temp\foo.csv"));
+        Assert.False(fileSystem.File.Exists(@"C:\Temp\bar.csv"));
+        Assert.False(fileSystem.File.Exists(@"C:\Temp\baz.csv"));
+
+        Assert.True(fileSystem.File.Exists(Path.Join(DestinationDirectory, "foo.csv")));
+        Assert.True(fileSystem.File.Exists(Path.Join(DestinationDirectory, "bar.csv")));
+        Assert.True(fileSystem.File.Exists(Path.Join(DestinationDirectory, "baz.csv")));
     }
 }

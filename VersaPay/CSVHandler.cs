@@ -21,7 +21,7 @@ public class CSVHandler : ICSVHandler
     }
 
     /// <inheritdoc/>
-    public void ParseStoreAndCopyCSV(string csvFullName, string destinationFullName)
+    public void ParseAndStore(string csvFullName)
     {
         var spreadsheet = this.spreadsheetReader.ReadCSV(csvFullName);
 
@@ -32,7 +32,5 @@ public class CSVHandler : ICSVHandler
             var payment = paymentReader.ReadRow(row);
             this.paymentRepository.Save(payment);
         }
-
-        spreadsheet.ExportCSV(destinationFullName);
     }
 }

@@ -62,8 +62,9 @@ public class Program
 
         foreach (var csvFileInfo in csvFileInfos)
         {
+            this.csvHandler.ParseAndStore(csvFileInfo.FullName);
             var destinationFullName = this.fileSystem.Path.Join(this.options.DestinationDirectory, csvFileInfo.Name);
-            this.csvHandler.ParseStoreAndCopyCSV(csvFileInfo.FullName, destinationFullName);
+            csvFileInfo.MoveTo(destinationFullName);
         }
     }
 
