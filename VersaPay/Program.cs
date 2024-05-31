@@ -38,6 +38,7 @@ public class Program
         builder.Services.AddSingleton<ISpreadsheetReader, GemboxSpreadsheetReader>();
         builder.Services.AddSingleton<IPaymentRepository, DummyPaymentRepository>();
         builder.Services.AddSingleton<IFileSystem, FileSystem>();
+        builder.Services.AddSingleton<IPaymentReaderFactory, PaymentReaderFactory>();
         builder.Services.AddOptions<ProgramOptions>()
             .Bind(builder.Configuration.GetSection(ProgramOptions.ConfigurationSectionName))
             .ValidateDataAnnotations()
